@@ -30,18 +30,6 @@ os fall 2022
 // unlink any existing shared mem
 void clean();
 
-// get fd
-int openMem(const char*);
-
-// map mem segment
-float* mapMem(int);
-
-// open read semaphore
-sem_t* openRead(const char*);
-
-// open write semaphore
-sem_t* openWrite(const char*);
-
 //consume contents of buffer
 void consume(sem_t*, sem_t*, int*);
 
@@ -54,6 +42,7 @@ int main(){
     //int fd = openMem(BUFFER);
     int fd = shm_open(BUFFER, O_CREAT | O_RDWR, 0600); /* read write execute permissions (goup and owner),
                                                                      readyonl with o-flag, create if not present */
+    if(fd < 0) return -35;
     ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
 
     //int* buffer = mapMem(fd);
@@ -87,27 +76,6 @@ void clean(){ // unlink all existing
     shm_unlink(SEM_WRITER);
 
     shm_unlink(SEM_READER);
-}
-
-
-int openMem(const char* name){
-    bug;
-    return shm_open(name, O_CREAT | O_RDONLY, S_IRWXU | S_IRWXG); /* read write execute permissions (goup and owner),
-                                                                     readonly with o-flag, create if not present */
-}
-
-float* mapMem(int fd){
-    bug;
-    return (float*)mmap(0, BUFF_SIZE, PROT_READ, MAP_SHARED, fd, 0);
-}
-
-sem_t* openWrite(const char* name){
-    bug;
-    return sem_open(name, O_CREAT, S_IRWXU, 1);
-}
-
-sem_t* openRead(const char* name){
-    return sem_open(name, O_CREAT, S_IRWXU, 0);
 }
 
 void consume(sem_t* reader, sem_t* writer, int* buffer){
