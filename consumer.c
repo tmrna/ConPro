@@ -39,13 +39,12 @@ int main(){
 
     clean();
 
-    //int fd = openMem(BUFFER);
     int fd = shm_open(BUFFER, O_CREAT | O_RDWR, 0600); /* read write execute permissions (goup and owner),
                                                                      readyonl with o-flag, create if not present */
     if(fd < 0) return -35;
     ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
 
-    //int* buffer = mapMem(fd);
+
     int* buffer = (int*)mmap(0, BUFF_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     
 
@@ -56,10 +55,10 @@ int main(){
     sem_getvalue(reader, &tmp);
     bug;
     sem_wait(reader); // block
-    //    while(tmp > 0){ // making sure seamaphore is binary
-    //    sem_wait(reader);
+    //while(tmp > 0){ // making sure seamaphore is binary
+    //   sem_wait(reader);
     //    sem_getvalue(reader, &tmp);
-    //}
+   // }
 
     consume(reader, writer, buffer);
     
