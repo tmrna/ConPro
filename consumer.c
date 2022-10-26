@@ -52,15 +52,13 @@ int main(){
     clean();
 
     //int fd = openMem(BUFFER);
-    int fd = shm_open(BUFFER, O_CREAT | O_RDWR | O_EXCL, 0600); /* read write execute permissions (goup and owner),
-                                                                     readonly with o-flag, create if not present */
-    //ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
+    int fd = shm_open(BUFFER, O_CREAT | O_RDWR, 0600); /* read write execute permissions (goup and owner),
+                                                                     readyonl with o-flag, create if not present */
+    ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
 
     //int* buffer = mapMem(fd);
-    int* buffer = (int*)mmap(NULL, BUFF_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-   //sem_t* writer = openWrite(SEM_WRITER),
-    //*reader = openRead(SEM_READER);
+    int* buffer = (int*)mmap(0, BUFF_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    
 
     sem_t* writer = sem_open(SEM_WRITER, O_CREAT, S_IRWXU, 1);
     sem_t* reader = sem_open(SEM_READER,O_CREAT, S_IRWXU, 0);

@@ -55,7 +55,7 @@ int main(){
     clean();
 
     //int fd = openMem(BUFFER);
-    int fd = shm_open(BUFFER, O_CREAT | O_RDWR | O_EXCL, 0600); /* read write execute permissions (goup and owner),
+    int fd = shm_open(BUFFER, O_CREAT | O_RDWR, 0600); /* read write execute permissions (goup and owner),
                                                                      readyonl with o-flag, create if not present */
     ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
 
