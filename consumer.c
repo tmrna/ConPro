@@ -19,7 +19,7 @@ os fall 2022
 #define SEM_READER "/sem_reader"
 
 // size of our buffer
-#define BUFF_SIZE sizeof(char)
+#define BUFF_SIZE sizeof(int) * 3
 
 // debugger
 #define bugMode 0
@@ -52,17 +52,12 @@ int main(){
     clean();
 
     //int fd = openMem(BUFFER);
-    int fd = shm_open(BUFFER, O_CREAT | O_RDONLY, S_IRWXU | S_IRWXG); /* read write execute permissions (goup and owner),
+    int fd = shm_open(BUFFER, O_CREAT | O_RDWR | O_EXCL, 0600); /* read write execute permissions (goup and owner),
                                                                      readonly with o-flag, create if not present */
-    ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
+    //ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
 
     //int* buffer = mapMem(fd);
-    float* buffer = (float*)mmap(NULL, BUFF_SIZE, PROT_READ, MAP_SHARED, fd, 0);
-    
-
-
-    int dataA = 1;
-    int dataB = 2;
+    int* buffer = (int*)mmap(NULL, BUFF_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
    //sem_t* writer = openWrite(SEM_WRITER),
     //*reader = openRead(SEM_READER);
@@ -71,20 +66,17 @@ int main(){
     sem_t* reader = sem_open(SEM_READER,O_CREAT, S_IRWXU, 0);
     int tmp;
     while(1){
-
+    sem_getvalue(reader, &tmp);
     bug;
     sem_wait(reader); // block
-    //consume(reader, writer, buff);
-    for(int i = 0; i < 2; i++){
-        printf("Consuming %i\n", i);
-    }
-    sem_getvalue(writer, &tmp);
-    printf("Value retrieved is %d\n", tmp);
-    while(tmp > 0){ // making sure seamaphore is binary
-        sem_wait(reader);
-        sem_getvalue(reader, &tmp);
-        printf("Current val reader %i\n", tmp);
-    }
+    //    while(tmp > 0){ // making sure seamaphore is binary
+    //    sem_wait(reader);
+    //    sem_getvalue(reader, &tmp);
+    //}
+
+    consume(reader, writer, buffer);
+    
+
     sem_post(writer); // unblock
     }
 }
@@ -108,7 +100,7 @@ int openMem(const char* name){
 
 float* mapMem(int fd){
     bug;
-    return (float*)mmap(NULL, BUFF_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+    return (float*)mmap(0, BUFF_SIZE, PROT_READ, MAP_SHARED, fd, 0);
 }
 
 sem_t* openWrite(const char* name){
@@ -120,7 +112,11 @@ sem_t* openRead(const char* name){
     return sem_open(name, O_CREAT, S_IRWXU, 0);
 }
 
-void consume(sem_t* reader, sem_t* writer, int* seg){
+void consume(sem_t* reader, sem_t* writer, int* buffer){
+    printf("Consuming buffer[0]: %i\n", buffer[0]);
+    buffer[0] = 0;
+    printf("Consuming buffer[1]: %i\n", buffer[1]);
+    buffer[1] = 0;
     bug;
 
 }

@@ -12,7 +12,7 @@ os fall 2022
 #include <unistd.h> // truncate
 
 // for ouir buffer, pts a, b
-#define BUFFER "/buffer_"
+#define BUFFER "/buffer"
 
 
 // names for semaphores
@@ -22,7 +22,7 @@ os fall 2022
 
 
 // size of our buffer
-#define BUFF_SIZE (sizeof(char) * 2)
+#define BUFF_SIZE (sizeof(char) * 3)
 
 // debugger
 #define bugMode 0
@@ -45,27 +45,27 @@ sem_t* openRead(const char*);
 // open write semaphore
 sem_t* openWrite(const char*);
 
-void produce(sem_t*, sem_t*, int*);
+void produce(sem_t*, sem_t*, int*, int, int);
 
 /////////////////////////////////////////////////   END FUNCTIONS /////////////////////////////////////////////////////////////////// 
 
 int main(){
+    bug;
+
     clean();
 
-    bug;
-    
     //int fd = openMem(BUFFER);
-    int fd = shm_open(BUFFER, O_CREAT | O_RDONLY, S_IRWXU | S_IRWXG); /* read write execute permissions (goup and owner),
-                                                                     readonly with o-flag, create if not present */
+    int fd = shm_open(BUFFER, O_CREAT | O_RDWR | O_EXCL, 0600); /* read write execute permissions (goup and owner),
+                                                                     readyonl with o-flag, create if not present */
     ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
 
-    float* buffer = mapMem(fd);
-    //float* buffer = (float*)mmap(NULL, BUFF_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+    //int* buffer = mapMem(fd);
+    int* buffer = (int*)mmap(0, BUFF_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     
-
-
-    int dataA = 1;
-    int dataB = 2;
+    buffer[0] = 2;
+    buffer[1] = 3;
+    printf("%i\n", buffer[0]);
+    printf("%i\n", buffer[1]);
 
    //sem_t* writer = openWrite(SEM_WRITER),
     //*reader = openRead(SEM_READER);
@@ -85,15 +85,16 @@ int main(){
     printf("Value retrieved is %d\n", tmp);
 
             bug;
-
+    int i = 0;
     while(1){
         sem_wait(writer);
-        sem_getvalue(writer, &tmp);
-        printf("Value retrieved is %d\n", tmp);
-    //produce(reader, writer, buff);
-        for(int i = 0; i < 2; i++){
-            printf("%i \n", i);
-        }
+
+
+        produce(reader, writer, buffer, 0, ++i);
+        produce(reader, writer, buffer, 1, ++i);
+        
+        if( i > 1000) i =0;
+
         while(tmp > 0){ // making sure semaphore is binary
             sem_wait(writer);
             sem_getvalue(writer, &tmp);
@@ -137,7 +138,9 @@ sem_t* openRead(const char* name){
     return sem_open(name, O_CREAT, S_IRWXU, 0);
 }
 
-void produce(sem_t* reader, sem_t*  writer, int* buffer){
+void produce(sem_t* reader, sem_t*  writer, int* buffer, int spot, int product){
+    printf("Producing buffer[%i]: %i\n",spot,  buffer[spot]);
+    buffer[spot] = product;
     bug;
 
 }
