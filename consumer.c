@@ -55,10 +55,6 @@ int main(){
     sem_getvalue(reader, &tmp);
     bug;
     sem_wait(reader); // block
-    //while(tmp > 0){ // making sure seamaphore is binary
-    //   sem_wait(reader);
-    //    sem_getvalue(reader, &tmp);
-   // }
 
     consume(reader, writer, buffer);
     

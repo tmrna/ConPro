@@ -80,10 +80,6 @@ int main(){
         
         if( i > 1000) i =0;
 
-      //  while(tmp > 0){ // making sure semaphore is binary
-      //      sem_wait(writer);
-       //     sem_getvalue(writer, &tmp);
-      //  }
     sem_post(reader);
     }
 }
