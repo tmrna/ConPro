@@ -8,10 +8,11 @@ os fall 2022
 #include <stdio.h> // debugging / output to console
 #include <sys/mman.h> // mapping mem
 #include <fcntl.h> // o flags
-#include <unistd.h>
-#include <sys/types.h>
-#include <errno.h>
-// for ouir buffer, pts a, b
+//#include <unistd.h> // truncate
+//#include <sys/types.h> // truncate
+#include <errno.h> // for errors when debug
+
+// for our buffer
 #define BUFFER "buffer"
 
 // names for semaphores
@@ -31,28 +32,17 @@ os fall 2022
 // unlink any existing shared mem
 void clean();
 
-//consume contents of buffer
-void consume(sem_t*, sem_t*, int*);
+//consume contents of buffer and display.
+void consume(int*);
 
 /////////////////////////////////////////////////   END FUNCTIONS /////////////////////////////////////////////////////////////////// 
 int main(){
-    bug;
+    int fd = shm_open(BUFFER, O_RDONLY, S_IRUSR); /* read only permissions for usr and process */
 
+    if(bugMode)perror("shm_open():ERROR");
 
-
-    int fd = shm_open(BUFFER, O_RDONLY, S_IRUSR); /* read write execute permissions (goup and owner),
-                                                                     readyonl with o-flag, create if not present */
-    bug;
-    perror("shm_open():ERROR");
-    bug;
-    //ftruncate(fd, BUFF_SIZE); // limit file size for buffer.
-    int buff[ELEMENT_CT];
-    bug;
-    read(fd, buff, BUFF_SIZE);
-    printf("%i, %i\n", buff[0], buff[1]);
-    bug;
     int* buffer = (int*)mmap(0, BUFF_SIZE, PROT_READ, MAP_SHARED, fd, 0);
-    
+    bug;
 
     sem_t* writer = sem_open(SEM_WRITER, O_CREAT, S_IRWXU, 1);
     sem_t* reader = sem_open(SEM_READER,O_CREAT, S_IRWXU, 0);
@@ -60,9 +50,13 @@ int main(){
     while(1){
     bug;
     sem_wait(reader); // block
-    sem_getvalue(reader, &tmp);
-    consume(reader, writer, buffer);
-    while(tmp > 0 ) sem_wait(reader); sem_getvalue(reader, &tmp);
+    /*  Crit sect  */
+    sem_getvalue(reader, &tmp); // set val to ensure reader stays binary sem
+
+    consume(buffer); // read from buffer
+
+    while(tmp > 0 ) sem_wait(reader); sem_getvalue(reader, &tmp); // Ensures reader is set to 0
+
     sem_post(writer); // unblock
     }
 }
@@ -77,7 +71,8 @@ void clean(){ // unlink all existing
     shm_unlink(SEM_READER);
 }
 
-void consume(sem_t* reader, sem_t* writer, int* buffer){
+// read from buffer and output to console.
+void consume(int* buffer){
     printf("Consuming buffer[0]: %i\n", buffer[0]);
     
     printf("Consuming buffer[1]: %i\n", buffer[1]);
