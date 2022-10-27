@@ -9,6 +9,7 @@ os fall 2022
 #include <sys/mman.h> // mapping mem
 #include <fcntl.h> // o flags
 #include <errno.h> // for errors when debug
+#include <unistd.h> // read
 
 // for our buffer
 #define BUFFER "buffer"
@@ -38,6 +39,9 @@ int main(){
     int fd = shm_open(BUFFER, O_RDONLY, S_IRUSR); /* read only permissions for usr and process */
 
     if(bugMode)perror("shm_open():ERROR");
+
+    int buff[ELEMENT_CT]; // make a buffer to read to 
+    read(fd, buff, BUFF_SIZE); // read to it
 
     int* buffer = (int*)mmap(0, BUFF_SIZE, PROT_READ, MAP_SHARED, fd, 0);
     bug;
