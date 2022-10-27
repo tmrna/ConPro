@@ -8,8 +8,6 @@ os fall 2022
 #include <stdio.h> // debugging / output to console
 #include <sys/mman.h> // mapping mem
 #include <fcntl.h> // o flags
-//#include <unistd.h> // truncate
-//#include <sys/types.h> // truncate
 #include <errno.h> // for errors when debug
 
 // for our buffer
